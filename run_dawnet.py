@@ -42,9 +42,9 @@ rune.set_output_target_sample_rate(44100)
 rune.set_output_target_bit_depth(16)
 
 rune.set_token(token=args.token)
-rune.set_name("Rune AI Template 2")
+rune.set_name("Rune AI Template")
 rune.set_description(
-    "This is a template intended as a starting place to create custom Rune AI functions. 2"
+    "This is a template intended as a starting place to create custom Rune AI functions."
 )
 rune.register_method(method_to_register)
 

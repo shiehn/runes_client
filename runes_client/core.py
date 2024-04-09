@@ -126,36 +126,36 @@ class WebSocketClient:
             #     },
             # )
 
-    async def connect(self):
-        if self.websocket is None or self.websocket.closed:
-            uri = f"ws://{self.server_ip}:{self.server_port}"
-            self.websocket = await websockets.connect(uri)
-            self.dn_tracer.log_event(
-                self.dawnet_token,
-                {
-                    DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
-                    DNTag.DNMsg.value: f"Connected to {uri}",
-                },
-            )
-            self.results = ResultsHandler(
-                websocket=self.websocket,
-                token=self.dawnet_token,
-                target_sample_rate=self.output_sample_rate,
-                target_bit_depth=self.output_bit_depth,
-                target_channels=self.output_channels,
-                target_format=self.output_format,
-            )
-
-        try:
-            await self.register_compute_instance()
-        except Exception as e:
-            self.dn_tracer.log_error(
-                self.dawnet_token,
-                {
-                    DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
-                    DNTag.DNMsg.value: f"Error connecting. {e}",
-                },
-            )
+    # async def connect(self):
+    #     if self.websocket is None or self.websocket.closed:
+    #         uri = f"ws://{self.server_ip}:{self.server_port}"
+    #         self.websocket = await websockets.connect(uri)
+    #         self.dn_tracer.log_event(
+    #             self.dawnet_token,
+    #             {
+    #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
+    #                 DNTag.DNMsg.value: f"Connected to {uri}",
+    #             },
+    #         )
+    #         self.results = ResultsHandler(
+    #             websocket=self.websocket,
+    #             token=self.dawnet_token,
+    #             target_sample_rate=self.output_sample_rate,
+    #             target_bit_depth=self.output_bit_depth,
+    #             target_channels=self.output_channels,
+    #             target_format=self.output_format,
+    #         )
+    #
+    #     try:
+    #         await self.register_compute_instance()
+    #     except Exception as e:
+    #         self.dn_tracer.log_error(
+    #             self.dawnet_token,
+    #             {
+    #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
+    #                 DNTag.DNMsg.value: f"Error connecting. {e}",
+    #             },
+    #         )
 
     async def register_compute_instance(self):
         if self.dawnet_token is None:
@@ -337,7 +337,16 @@ class WebSocketClient:
             + str(self.description)
         )
 
-        await self.connect()  # Ensure we're connected
+        self.results = ResultsHandler(
+            websocket=self.websocket,
+            token=self.dawnet_token,
+            target_sample_rate=self.output_sample_rate,
+            target_bit_depth=self.output_bit_depth,
+            target_channels=self.output_channels,
+            target_format=self.output_format,
+        )
+
+        # await self.connect()  # Ensure we're connected
 
         self.dn_tracer.log_event(
             self.dawnet_token,

@@ -119,11 +119,16 @@ class APIClient:
                 else:
                     raise  # Re-raise the last exception if all retries fail
 
-    async def fetch_pending_requests(self):
+    async def fetch_pending_requests(self, connection_token: str):
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(
-                    urljoin(API_BASE_URL, URL_GET_PENDING_MESSAGES)
+                    urljoin(
+                        API_BASE_URL,
+                        URL_GET_PENDING_MESSAGES.format(
+                            connection_token=connection_token
+                        ),
+                    )
                 ) as response:
                     # Check response status. If not 200 OK, print error and continue.
                     if response.status != 200:
@@ -192,7 +197,6 @@ class APIClient:
                 async with aiohttp.ClientSession() as session:
                     async with session.patch(update_url, json=payload) as response:
                         response_data = await response.text()
-                        print("UPDATE RES: " + str(response_data))
                         if response.status != 200:
                             print(
                                 f"Error updating status for message_id: {message_id} with token: {token}. Status code: {response.status}, Response: {response_data}"

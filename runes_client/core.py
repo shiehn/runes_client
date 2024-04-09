@@ -47,7 +47,7 @@ class WebSocketClient:
         self.method_registry = {}
         self.method_details = {}
         self.run_status = "idle"
-        self.dawnet_token = None
+        self.connection_token = None
         self.master_token = None
         self.message_id = None
         self.results = None
@@ -80,7 +80,7 @@ class WebSocketClient:
             self.master_token = dn_client_token
 
     async def send_registered_methods_to_server(self):
-        if self.dawnet_token is None:
+        if self.connection_token is None:
             raise Exception(
                 "Token not set. Please call set_token(token) before calling send_registered_methods_to_server()."
             )
@@ -100,18 +100,18 @@ class WebSocketClient:
 
             # Construct the message to register the method
             # register_compute_contract_msg = {
-            #     "token": self.dawnet_token,
+            #     "token": self.connection_token,
             #     "type": "contract",
             #     "data": last_method_details,
             # }
 
             await self.api_client.create_compute_contract(
-                token=self.dawnet_token, data=last_method_details
+                token=self.connection_token, data=last_method_details
             )
 
             await self.api_client.add_connection_mapping(
                 master_token=self.master_token,
-                connection_token=self.dawnet_token,
+                connection_token=self.connection_token,
                 name=self.name,
                 description=self.description,
             )
@@ -119,10 +119,10 @@ class WebSocketClient:
             # Send the registration message to the server
             # await self.websocket.send(json.dumps(register_compute_contract_msg))
             # self.dn_tracer.log_event(
-            #     self.dawnet_token,
+            #     self.connection_token,
             #     {
             #         DNTag.DNMsgStage.value: DNMsgStage.CLIENT_REG_CONTRACT.value,
-            #         DNTag.DNMsg.value: f"Sent contract for registration. Token: {self.dawnet_token}",
+            #         DNTag.DNMsg.value: f"Sent contract for registration. Token: {self.connection_token}",
             #     },
             # )
 
@@ -131,7 +131,7 @@ class WebSocketClient:
     #         uri = f"ws://{self.server_ip}:{self.server_port}"
     #         self.websocket = await websockets.connect(uri)
     #         self.dn_tracer.log_event(
-    #             self.dawnet_token,
+    #             self.connection_token,
     #             {
     #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
     #                 DNTag.DNMsg.value: f"Connected to {uri}",
@@ -139,7 +139,7 @@ class WebSocketClient:
     #         )
     #         self.results = ResultsHandler(
     #             websocket=self.websocket,
-    #             token=self.dawnet_token,
+    #             token=self.connection_token,
     #             target_sample_rate=self.output_sample_rate,
     #             target_bit_depth=self.output_bit_depth,
     #             target_channels=self.output_channels,
@@ -150,7 +150,7 @@ class WebSocketClient:
     #         await self.register_compute_instance()
     #     except Exception as e:
     #         self.dn_tracer.log_error(
-    #             self.dawnet_token,
+    #             self.connection_token,
     #             {
     #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
     #                 DNTag.DNMsg.value: f"Error connecting. {e}",
@@ -158,7 +158,7 @@ class WebSocketClient:
     #         )
 
     async def register_compute_instance(self):
-        if self.dawnet_token is None:
+        if self.connection_token is None:
             raise Exception(
                 "Token not set. Please call set_token(token) before registering a method."
             )
@@ -170,7 +170,7 @@ class WebSocketClient:
 
         # Construct the message to register the compute instance
         register_compute_instance_msg = {
-            "token": self.dawnet_token,
+            "token": self.connection_token,
             "type": "register",
             "data": {
                 "master_token": self.master_token,
@@ -328,7 +328,7 @@ class WebSocketClient:
         self.method_registry = {method_name: method}
 
         # TODO: there should be a better way to do this:
-        self.dawnet_token = self.generate_uuid(
+        self.connection_token = self.generate_uuid(
             str(method_details)
             + str(self.master_token)
             + str(self.name)
@@ -339,7 +339,7 @@ class WebSocketClient:
 
         self.results = ResultsHandler(
             websocket=self.websocket,
-            token=self.dawnet_token,
+            token=self.connection_token,
             target_sample_rate=self.output_sample_rate,
             target_bit_depth=self.output_bit_depth,
             target_channels=self.output_channels,
@@ -349,7 +349,7 @@ class WebSocketClient:
         # await self.connect()  # Ensure we're connected
 
         self.dn_tracer.log_event(
-            self.dawnet_token,
+            self.connection_token,
             {
                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_REG_METHOD.value,
                 DNTag.DNMsg.value: f"Registered method: {method_name}",
@@ -404,7 +404,7 @@ class WebSocketClient:
                     await self.results.send()
 
                     self.dn_tracer.log_event(
-                        self.dawnet_token,
+                        self.connection_token,
                         {
                             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_RUN_METHOD.value,
                             DNTag.DNMsg.value: f"Ran method: {name}",
@@ -416,7 +416,7 @@ class WebSocketClient:
                     await self.results.send()
 
                     self.dn_tracer.log_error(
-                        self.dawnet_token,
+                        self.connection_token,
                         {
                             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_RUN_METHOD.value,
                             DNTag.DNMsg.value: f"Error running method: {e}",
@@ -429,12 +429,12 @@ class WebSocketClient:
                 # try:
                 #     func = lambda: method(**kwargs)
                 #     result = await loop.run_in_executor(None, func)
-                #     self.dn_tracer.log_event(self.dawnet_token, {
+                #     self.dn_tracer.log_event(self.connection_token, {
                 #         DNTag.DNMsgStage.value: DNMsgStage.CLIENT_RUN_METHOD.value,
                 #         DNTag.DNMsg.value: f"Ran method: {name}",
                 #     })
                 # except Exception as e:
-                #     self.dn_tracer.log_error(self.dawnet_token, {
+                #     self.dn_tracer.log_error(self.connection_token, {
                 #         DNTag.DNMsgStage.value: DNMsgStage.CLIENT_RUN_METHOD.value,
                 #         DNTag.DNMsg.value: f"Error running method: {e}",
                 #     })
@@ -459,7 +459,7 @@ class WebSocketClient:
                         obj[key] = await self.download_file(value, session)
 
                         self.dn_tracer.log_event(
-                            self.dawnet_token,
+                            self.connection_token,
                             {
                                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_DOWNLOAD_ASSET.value,
                                 DNTag.DNMsg.value: f"Downloaded: {str(obj[key])}",
@@ -467,7 +467,7 @@ class WebSocketClient:
                         )
                     except Exception as e:
                         self.dn_tracer.log_error(
-                            self.dawnet_token,
+                            self.connection_token,
                             {
                                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_DOWNLOAD_ASSET.value,
                                 DNTag.DNMsg.value: f"Error downloading: {e}",
@@ -510,7 +510,7 @@ class WebSocketClient:
                         )
 
                         self.dn_tracer.log_event(
-                            self.dawnet_token,
+                            self.connection_token,
                             {
                                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONVERT_DOWNLOAD.value,
                                 DNTag.DNMsg.value: f"Converted download: {local_path}",
@@ -518,7 +518,7 @@ class WebSocketClient:
                         )
                     except Exception as e:
                         self.dn_tracer.log_error(
-                            self.dawnet_token,
+                            self.connection_token,
                             {
                                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONVERT_DOWNLOAD.value,
                                 DNTag.DNMsg.value: f"Error converting downloading: {e}",
@@ -530,7 +530,7 @@ class WebSocketClient:
                 raise Exception(f"Failed to download file: {url}")
 
     # async def listen(self):
-    #     if self.dawnet_token is None:
+    #     if self.connection_token is None:
     #         raise Exception(
     #             "Token not set. Please call set_token(token) before starting to listen."
     #         )
@@ -555,7 +555,7 @@ class WebSocketClient:
     #                 #     await self.download_gcp_files(msg, session)
     #                 # except Exception as e:
     #                 #     self.dn_tracer.log_error(
-    #                 #         _client.dawnet_token,
+    #                 #         _client.connection_token,
     #                 #         {
     #                 #             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_DOWNLOAD_ASSET.value,
     #                 #             DNTag.DNMsg.value: f"Error downloading GCP files: {e}",
@@ -605,7 +605,7 @@ class WebSocketClient:
     #                 #
     #                 # else:
     #                 #     self.dn_tracer.log_error(
-    #                 #         _client.dawnet_token,
+    #                 #         _client.connection_token,
     #                 #         {
     #                 #             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
     #                 #             DNTag.DNMsg.value: "UNKNOWN MESSAGE TYPE",
@@ -614,7 +614,7 @@ class WebSocketClient:
     #
     #     except websockets.exceptions.ConnectionClosedOK:
     #         self.dn_tracer.log_error(
-    #             _client.dawnet_token,
+    #             _client.connection_token,
     #             {
     #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
     #                 DNTag.DNMsg.value: "Connection was closed.",
@@ -669,7 +669,7 @@ class WebSocketClient:
     async def heartbeat(self):
         while True:
             try:
-                await self.api_client.connection_heartbeat(self.dawnet_token)
+                await self.api_client.connection_heartbeat(self.connection_token)
                 print("Heartbeat successful.")
             except Exception as e:
                 print(f"An error occurred in heartbeat: {e}")
@@ -691,7 +691,7 @@ class WebSocketClient:
                 await self.download_gcp_files(msg, session)
         except Exception as e:
             self.dn_tracer.log_error(
-                _client.dawnet_token,
+                _client.connection_token,
                 {
                     DNTag.DNMsgStage.value: DNMsgStage.CLIENT_DOWNLOAD_ASSET.value,
                     DNTag.DNMsg.value: f"Error downloading GCP files: {e}",
@@ -710,17 +710,13 @@ class WebSocketClient:
                 )  # investigate why this prevents a race condition!!!!
                 # Check if the status is already "running"
                 if run_status.status == "running":
-                    print("AAA")
                     await self.websocket.send("Plugin already started!")
                 else:
-                    print("BBB")
                     self.results.clear_outputs()  # Clear previous outputs before running the method
                     self.message_id = message_id
                     self.results.set_message_id(message_id)
                     self.daw_bpm = msg["bpm"]
                     self.daw_sample_rate = msg["sample_rate"]
-
-                    print("CCC")
 
                     data = msg["data"]
                     method_name = data["method_name"]
@@ -732,10 +728,7 @@ class WebSocketClient:
 
                     # Now you can call run_method using argument unpacking
                     asyncio.create_task(self.run_method(method_name, **params))
-
-                    print("DDD")
             elif msg["type"] == "close_connection":
-                print("EEE")
                 try:
                     await self.websocket.close()
                 except Exception as e:
@@ -744,9 +737,8 @@ class WebSocketClient:
                 print("Connection closed by server")
 
         else:
-            print("FFF")
             self.dn_tracer.log_error(
-                _client.dawnet_token,
+                _client.connection_token,
                 {
                     DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
                     DNTag.DNMsg.value: "UNKNOWN MESSAGE TYPE",
@@ -756,13 +748,15 @@ class WebSocketClient:
     async def poll_updates(self):
         while True:
             try:
-                pending_requests = await self.api_client.fetch_pending_requests()
+                pending_requests = await self.api_client.fetch_pending_requests(
+                    connection_token=str(self.connection_token)
+                )
 
                 # Loop through the connections and send the message to each one
                 for record in pending_requests:
                     print(f"PENDNG_TOKEN: {record['token']}")
-                    print(f"CONNECTION_TOKEN: {self.dawnet_token}")
-                    if self.dawnet_token != record["token"]:
+                    print(f"CONNECTION_TOKEN: {self.connection_token}")
+                    if self.connection_token != record["token"]:
                         # Skip the request if its not for this client
                         # TODO: fetch pending requests should only return requests for this client
                         continue
@@ -857,7 +851,7 @@ def register_method(method):
     except Exception as e:
         dn_tracer = SentryEventLogger(service_name=DNSystemType.DN_CLIENT.value)
         dn_tracer.log_error(
-            _client.dawnet_token,
+            _client.connection_token,
             {
                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_REG_METHOD.value,
                 DNTag.DNMsg.value: f"Error registering method: {e}",

@@ -2,12 +2,12 @@ import uuid
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from elixit_client import WebSocketClient, DAWNetFilePath
+from elixit_client import WebSocketClient, RunesFilePath
 from elixit_client import ui_param
 
 
 # Example method to register
-async def example_method_one(a: int, b: float, c: str, d: DAWNetFilePath):
+async def example_method_one(a: int, b: float, c: str, d: RunesFilePath):
     pass
 
 
@@ -30,7 +30,7 @@ async def test_register_method_one():
         {"name": "c", "type": "str", "default_value": "", "ui_component": None},
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },
@@ -60,7 +60,7 @@ async def test_register_method_one_with_no_name_no_description():
         {"name": "c", "type": "str", "default_value": "", "ui_component": None},
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },
@@ -99,7 +99,7 @@ async def test_register_method_one_with_description():
         {"name": "c", "type": "str", "default_value": "", "ui_component": None},
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },
@@ -116,7 +116,7 @@ async def test_register_method_one_with_description():
 
 
 async def example_method_one_defaults(
-    a: int = 5, b: float = 2.2, c: str = "hello", d: DAWNetFilePath = None
+    a: int = 5, b: float = 2.2, c: str = "hello", d: RunesFilePath = None
 ):
     pass
 
@@ -140,7 +140,7 @@ async def test_register_method_one_defaults():
         {"name": "c", "type": "str", "default_value": "hello", "ui_component": None},
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },
@@ -148,7 +148,7 @@ async def test_register_method_one_defaults():
 
 
 async def example_method_one_partial_defaults(
-    a: int, b: float, c: str = "hello", d: DAWNetFilePath = None
+    a: int, b: float, c: str = "hello", d: RunesFilePath = None
 ):
     pass
 
@@ -172,16 +172,16 @@ async def test_method_one_partial_defaults():
         {"name": "c", "type": "str", "default_value": "hello", "ui_component": None},
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },
     ]
 
 
-@ui_param("a", "DAWNetNumberSlider", min=0, max=10, step=1, default=5)
+@ui_param("a", "RunesNumberSlider", min=0, max=10, step=1, default=5)
 async def example_method_one_with_decorators(
-    a: int, b: float, c: str = "hello", d: DAWNetFilePath = None
+    a: int, b: float, c: str = "hello", d: RunesFilePath = None
 ):
     pass
 
@@ -207,23 +207,23 @@ async def test_register_method_one_with_decorators():
             "min": 0,
             "max": 10,
             "step": 1,
-            "ui_component": "DAWNetNumberSlider",
+            "ui_component": "RunesNumberSlider",
         },
         {"name": "b", "type": "float", "default_value": 0.0, "ui_component": None},
         {"name": "c", "type": "str", "default_value": "hello", "ui_component": None},
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },
     ]
 
 
-@ui_param("a", "DAWNetNumberSlider", min=0, max=10, step=1, default=5)
-@ui_param("b", "DAWNetNumberSlider", min=0.0, max=10.0, step=0.5, default=7.7)
+@ui_param("a", "RunesNumberSlider", min=0, max=10, step=1, default=5)
+@ui_param("b", "RunesNumberSlider", min=0.0, max=10.0, step=0.5, default=7.7)
 async def example_method_one_with_multiple_decorators(
-    a: int, b: float = 7.7, c: str = "hello", d: DAWNetFilePath = None
+    a: int, b: float = 7.7, c: str = "hello", d: RunesFilePath = None
 ):
     pass
 
@@ -251,7 +251,7 @@ async def test_register_method_one_with_multiple_decorators():
             "min": 0,
             "max": 10,
             "step": 1,
-            "ui_component": "DAWNetNumberSlider",
+            "ui_component": "RunesNumberSlider",
         },
         {
             "name": "b",
@@ -260,12 +260,12 @@ async def test_register_method_one_with_multiple_decorators():
             "min": 0.0,
             "max": 10.0,
             "step": 0.5,
-            "ui_component": "DAWNetNumberSlider",
+            "ui_component": "RunesNumberSlider",
         },
         {"name": "c", "type": "str", "default_value": "hello", "ui_component": None},
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },
@@ -274,7 +274,7 @@ async def test_register_method_one_with_multiple_decorators():
 
 @ui_param("a", "unsupported_ui_component", min=0, max=10, step=1, default=5)
 async def example_method_one_with_unsupported_decorators(
-    a: int, b: float, c: str = "hello", d: DAWNetFilePath = None
+    a: int, b: float, c: str = "hello", d: RunesFilePath = None
 ):
     pass
 
@@ -293,9 +293,9 @@ async def test_register_method_one_with_unsupported_decorators():
     assert "Unsupported UI component" in str(exc_info.value)
 
 
-@ui_param("a", "DAWNetNumberSlider", min=0, max=10, fakeparam="fake", step=1, default=5)
+@ui_param("a", "RunesNumberSlider", min=0, max=10, fakeparam="fake", step=1, default=5)
 async def example_method_one_with_unsupported_param(
-    a: int, b: float, c: str = "hello", d: DAWNetFilePath = None
+    a: int, b: float, c: str = "hello", d: RunesFilePath = None
 ):
     pass
 
@@ -314,9 +314,9 @@ async def test_register_method_one_with_unsupported_param():
     assert "Unsupported UI param" in str(exc_info.value)
 
 
-@ui_param("a", "DAWNetNumberSlider", min=0, max=10, default=5)
+@ui_param("a", "RunesNumberSlider", min=0, max=10, default=5)
 async def example_method_one_missing_required_param(
-    a: int, b: float, c: str = "hello", d: DAWNetFilePath = None
+    a: int, b: float, c: str = "hello", d: RunesFilePath = None
 ):
     pass
 
@@ -335,8 +335,8 @@ async def test_register_method_one_missing_required_param():
     assert "Missing required param(s)" in str(exc_info.value)
 
 
-@ui_param("c", "DAWNetMultiChoice", options=["one", "two", "three"], default="two")
-async def example_method_multichoice(a: int, b: float, c: str, d: DAWNetFilePath):
+@ui_param("c", "RunesMultiChoice", options=["one", "two", "three"], default="two")
+async def example_method_multichoice(a: int, b: float, c: str, d: RunesFilePath):
     pass
 
 
@@ -361,11 +361,11 @@ async def test_register_method_example_method_multichoice():
             "type": "str",
             "options": ["one", "two", "three"],
             "default_value": "two",
-            "ui_component": "DAWNetMultiChoice",
+            "ui_component": "RunesMultiChoice",
         },
         {
             "name": "d",
-            "type": "DAWNetFilePath",
+            "type": "RunesFilePath",
             "default_value": None,
             "ui_component": None,
         },

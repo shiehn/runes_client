@@ -209,7 +209,7 @@ class WebSocketClient:
                 )
 
             param_type_name = param.annotation.__name__
-            supported_types = {"bool", "int", "float", "str", "DAWNetFilePath"}
+            supported_types = {"bool", "int", "float", "str", "RunesFilePath"}
             if param_type_name not in supported_types:
                 raise ValueError(
                     f"Unsupported type '{param_type_name}' for parameter '{param.name}'."
@@ -242,10 +242,10 @@ class WebSocketClient:
             "ui_component",
             "options",
         }
-        supported_ui_components = {"DAWNetNumberSlider", "DAWNetMultiChoice"}
+        supported_ui_components = {"RunesNumberSlider", "RunesMultiChoice"}
         ui_component_requirements = {
-            "dawnetnumberslider": {"min", "max", "step", "default"},
-            "dawnetmultichoice": {"options", "default"},
+            "runesnumberslider": {"min", "max", "step", "default"},
+            "runesmultichoice": {"options", "default"},
         }
 
         if hasattr(method, "_ui_params") and param.name in method._ui_params:
@@ -520,97 +520,97 @@ class WebSocketClient:
             else:
                 raise Exception(f"Failed to download file: {url}")
 
-    async def listen(self):
-        if self.dawnet_token is None:
-            raise Exception(
-                "Token not set. Please call set_token(token) before starting to listen."
-            )
-
-        await self.connect()  # Ensure we're connected
-
-        try:
-            # Create a temporary directory
-            self.temp_dir = tempfile.mkdtemp()
-            self.logger.info(f"Created a temporary directory: {self.temp_dir}")
-
-            async with aiohttp.ClientSession() as session:
-                # Continuous listening loop
-                while True:
-                    print("LISTENING")
-                    # register_compute_instance_msg = await self.websocket.recv()
-                    #
-                    # msg = json.loads(register_compute_instance_msg)
-                    #
-                    # # Download GCP-hosted files and update the JSON
-                    # try:
-                    #     await self.download_gcp_files(msg, session)
-                    # except Exception as e:
-                    #     self.dn_tracer.log_error(
-                    #         _client.dawnet_token,
-                    #         {
-                    #             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_DOWNLOAD_ASSET.value,
-                    #             DNTag.DNMsg.value: f"Error downloading GCP files: {e}",
-                    #         },
-                    #     )
-                    #
-                    # if "type" in msg:
-                    #     print(
-                    #         "HANDLE MSG TYPE: " + str(msg)
-                    #     )  # investigate why this prevents a race condition!!!!
-                    #     if msg["type"] == "run_method":
-                    #         print(
-                    #             "RUN METHOD RECEIVED"
-                    #         )  # investigate why this prevents a race condition!!!!
-                    #         # Check if the status is already "running"
-                    #         if run_status.status == "running":
-                    #             await self.websocket.send("Plugin already started!")
-                    #         else:
-                    #             self.results.clear_outputs()  # Clear previous outputs before running the method
-                    #             self.message_id = msg["message_id"]
-                    #             self.results.set_message_id(self.message_id)
-                    #             self.daw_bpm = msg["bpm"]
-                    #             self.daw_sample_rate = msg["sample_rate"]
-                    #
-                    #             data = msg["data"]
-                    #             method_name = data["method_name"]
-                    #             # Extract 'value' for each parameter to build kwargs
-                    #             params = {
-                    #                 param_name: param_details["value"]
-                    #                 for param_name, param_details in data[
-                    #                     "params"
-                    #                 ].items()
-                    #             }
-                    #
-                    #             # Now you can call run_method using argument unpacking
-                    #             asyncio.create_task(
-                    #                 self.run_method(method_name, **params)
-                    #             )
-                    #     elif msg["type"] == "close_connection":
-                    #         try:
-                    #             await self.websocket.close()
-                    #         except Exception as e:
-                    #             print("Error closing connection: ", e)
-                    #
-                    #         print("Connection closed by server")
-                    #         break  # Exit the while loop
-                    #
-                    # else:
-                    #     self.dn_tracer.log_error(
-                    #         _client.dawnet_token,
-                    #         {
-                    #             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
-                    #             DNTag.DNMsg.value: "UNKNOWN MESSAGE TYPE",
-                    #         },
-                    #     )
-
-        except websockets.exceptions.ConnectionClosedOK:
-            self.dn_tracer.log_error(
-                _client.dawnet_token,
-                {
-                    DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
-                    DNTag.DNMsg.value: "Connection was closed.",
-                },
-            )
+    # async def listen(self):
+    #     if self.dawnet_token is None:
+    #         raise Exception(
+    #             "Token not set. Please call set_token(token) before starting to listen."
+    #         )
+    #
+    #     await self.connect()  # Ensure we're connected
+    #
+    #     try:
+    #         # Create a temporary directory
+    #         self.temp_dir = tempfile.mkdtemp()
+    #         self.logger.info(f"Created a temporary directory: {self.temp_dir}")
+    #
+    #         async with aiohttp.ClientSession() as session:
+    #             # Continuous listening loop
+    #             while True:
+    #                 print("LISTENING")
+    #                 # register_compute_instance_msg = await self.websocket.recv()
+    #                 #
+    #                 # msg = json.loads(register_compute_instance_msg)
+    #                 #
+    #                 # # Download GCP-hosted files and update the JSON
+    #                 # try:
+    #                 #     await self.download_gcp_files(msg, session)
+    #                 # except Exception as e:
+    #                 #     self.dn_tracer.log_error(
+    #                 #         _client.dawnet_token,
+    #                 #         {
+    #                 #             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_DOWNLOAD_ASSET.value,
+    #                 #             DNTag.DNMsg.value: f"Error downloading GCP files: {e}",
+    #                 #         },
+    #                 #     )
+    #                 #
+    #                 # if "type" in msg:
+    #                 #     print(
+    #                 #         "HANDLE MSG TYPE: " + str(msg)
+    #                 #     )  # investigate why this prevents a race condition!!!!
+    #                 #     if msg["type"] == "run_method":
+    #                 #         print(
+    #                 #             "RUN METHOD RECEIVED"
+    #                 #         )  # investigate why this prevents a race condition!!!!
+    #                 #         # Check if the status is already "running"
+    #                 #         if run_status.status == "running":
+    #                 #             await self.websocket.send("Plugin already started!")
+    #                 #         else:
+    #                 #             self.results.clear_outputs()  # Clear previous outputs before running the method
+    #                 #             self.message_id = msg["message_id"]
+    #                 #             self.results.set_message_id(self.message_id)
+    #                 #             self.daw_bpm = msg["bpm"]
+    #                 #             self.daw_sample_rate = msg["sample_rate"]
+    #                 #
+    #                 #             data = msg["data"]
+    #                 #             method_name = data["method_name"]
+    #                 #             # Extract 'value' for each parameter to build kwargs
+    #                 #             params = {
+    #                 #                 param_name: param_details["value"]
+    #                 #                 for param_name, param_details in data[
+    #                 #                     "params"
+    #                 #                 ].items()
+    #                 #             }
+    #                 #
+    #                 #             # Now you can call run_method using argument unpacking
+    #                 #             asyncio.create_task(
+    #                 #                 self.run_method(method_name, **params)
+    #                 #             )
+    #                 #     elif msg["type"] == "close_connection":
+    #                 #         try:
+    #                 #             await self.websocket.close()
+    #                 #         except Exception as e:
+    #                 #             print("Error closing connection: ", e)
+    #                 #
+    #                 #         print("Connection closed by server")
+    #                 #         break  # Exit the while loop
+    #                 #
+    #                 # else:
+    #                 #     self.dn_tracer.log_error(
+    #                 #         _client.dawnet_token,
+    #                 #         {
+    #                 #             DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
+    #                 #             DNTag.DNMsg.value: "UNKNOWN MESSAGE TYPE",
+    #                 #         },
+    #                 #     )
+    #
+    #     except websockets.exceptions.ConnectionClosedOK:
+    #         self.dn_tracer.log_error(
+    #             _client.dawnet_token,
+    #             {
+    #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
+    #                 DNTag.DNMsg.value: "Connection was closed.",
+    #             },
+    #         )
 
     def set_token(self, token):
         dn_client_token = os.getenv("DN_CLIENT_TOKEN")
@@ -1014,5 +1014,5 @@ def connect_to_server():
 
 
 # THIS IS A SPECIAL TYPE THAT WILL BE USED TO REPRESENT FILE UPLOADS
-class DAWNetFilePath(str):
+class RunesFilePath(str):
     pass

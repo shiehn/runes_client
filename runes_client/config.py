@@ -14,6 +14,7 @@ STORAGE_BUCKET_PATH = os.getenv(
 
 # API URLs
 URL_UPDATE_CONNECTION_STATUS = "api/hub/connection/compute/{token}/{connection_status}/"
+URL_UPDATE_CONNECTION_LOADED_STATUS = "api/hub/connections/{token}/loaded/"
 URL_GET_CONNECTIONS = "api/hub/connections/{token}/"
 URL_ADD_CONNECTION_MAPPING = "api/hub/connection_mappings/"
 URL_CREATE_COMPUTE_CONTRACT = "api/hub/compute/contract/"

@@ -7,6 +7,7 @@ import aiohttp
 from .config import (
     API_BASE_URL,
     URL_UPDATE_CONNECTION_STATUS,
+    URL_UPDATE_CONNECTION_LOADED_STATUS,
     URL_CREATE_COMPUTE_CONTRACT,
     URL_ADD_CONNECTION_MAPPING,
     URL_GET_PENDING_MESSAGES,
@@ -142,46 +143,31 @@ class APIClient:
 
                     return data
 
-                    # print('LATEST_PENDING_MESSAGES: ', str(data))
-
-                    # Loop through the connections and send the message to each one
-                    # for record in data:
-                    #     print("ID: ", record["id"])
-                    #     print("TOKEN: ", record["token"])
-                    #     print("REQUEST: ", record["request"])
-                    #     try:
-                    #         result = await connection_manager.send_message_to_token(
-                    #             token=record["token"],
-                    #             message_id=record["id"],
-                    #             message=record["request"],
-                    #         )
-                    #
-                    #         print("RESULT: " + str(result))
-                    #
-                    #         if result is True:
-                    #             await update_message_status(
-                    #                 token=record["token"],
-                    #                 message_id=record["id"],
-                    #                 new_status="processing",
-                    #             )
-                    #         else:
-                    #             await update_message_status(
-                    #                 token=record["token"],
-                    #                 message_id=record["id"],
-                    #                 new_status="error",
-                    #             )
-                    #     except Exception as e:
-                    #         await update_message_status(
-                    #             token=record["token"],
-                    #             message_id=record["id"],
-                    #             new_status="error",
-                    #         )
-                    #         print(
-                    #             f"Unexpected error during the forwarding of a pending request: {e}"
-                    #         )
-
             except Exception as e:
                 print(f"Unexpected error during check_connection_statuses: {e}")
+
+    async def update_connection_loaded_status(
+        self, connection_token: str, loaded: bool
+    ) -> bool:
+        update_url = urljoin(
+            API_BASE_URL,
+            URL_UPDATE_CONNECTION_LOADED_STATUS.format(token=connection_token),
+        )
+
+        data = {"loaded": loaded}
+
+        async with aiohttp.ClientSession() as session:
+            async with session.put(update_url, json=data) as response:
+                if response.status != 200:
+                    logging.info(
+                        f"Error updating status for client_id: {connection_token}."
+                    )
+                    return False
+                else:
+                    logging.info(
+                        f"Successfully updated status for client_id: {connection_token}"
+                    )
+                    return True
 
     async def update_message_status(self, token: str, message_id: str, new_status: str):
         print(f"UPDATING MESSAGE STATUS for id {message_id}")

@@ -1,6 +1,7 @@
 import asyncio
 import io
 import sys
+import threading
 import uuid
 
 import websockets
@@ -36,6 +37,9 @@ run_status = RunStatus()
 # Method registry for the client
 method_registry_local = {}
 method_details_local = {}
+
+# This is hold the registered imports function provided by the user
+registered_imports_func = None
 
 
 class WebSocketClient:
@@ -79,6 +83,20 @@ class WebSocketClient:
         if dn_client_token:
             self.master_token = dn_client_token
 
+    async def initialize_dependencies(self):
+        await self.api_client.update_connection_loaded_status(
+            self.connection_token, False
+        )
+        print("INSTALLING DEPENDENCIES - START")
+
+        if registered_imports_func is not None:
+            await registered_imports_func()
+
+        await self.api_client.update_connection_loaded_status(
+            self.connection_token, True
+        )
+        print("INSTALLING DEPENDENCIES - COMPLETE")
+
     async def send_registered_methods_to_server(self):
         if self.connection_token is None:
             raise Exception(
@@ -90,20 +108,10 @@ class WebSocketClient:
                 "Master Token not set. Please call set_token(token) before calling send_registered_methods_to_server()."
             )
 
-        # await self.connect()  # Ensure we're connected
-
-        # Check if there's at least one method registered
+        # FIRST REGISTER THE METHOD
         if self.method_registry:
-            # Get the last registered method's name and details
             last_method_name, last_method = next(reversed(self.method_registry.items()))
             last_method_details = self.method_details[last_method_name]
-
-            # Construct the message to register the method
-            # register_compute_contract_msg = {
-            #     "token": self.connection_token,
-            #     "type": "contract",
-            #     "data": last_method_details,
-            # }
 
             await self.api_client.create_compute_contract(
                 token=self.connection_token, data=last_method_details
@@ -116,46 +124,8 @@ class WebSocketClient:
                 description=self.description,
             )
 
-            # Send the registration message to the server
-            # await self.websocket.send(json.dumps(register_compute_contract_msg))
-            # self.dn_tracer.log_event(
-            #     self.connection_token,
-            #     {
-            #         DNTag.DNMsgStage.value: DNMsgStage.CLIENT_REG_CONTRACT.value,
-            #         DNTag.DNMsg.value: f"Sent contract for registration. Token: {self.connection_token}",
-            #     },
-            # )
-
-    # async def connect(self):
-    #     if self.websocket is None or self.websocket.closed:
-    #         uri = f"ws://{self.server_ip}:{self.server_port}"
-    #         self.websocket = await websockets.connect(uri)
-    #         self.dn_tracer.log_event(
-    #             self.connection_token,
-    #             {
-    #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
-    #                 DNTag.DNMsg.value: f"Connected to {uri}",
-    #             },
-    #         )
-    #         self.results = ResultsHandler(
-    #             websocket=self.websocket,
-    #             token=self.connection_token,
-    #             target_sample_rate=self.output_sample_rate,
-    #             target_bit_depth=self.output_bit_depth,
-    #             target_channels=self.output_channels,
-    #             target_format=self.output_format,
-    #         )
-    #
-    #     try:
-    #         await self.register_compute_instance()
-    #     except Exception as e:
-    #         self.dn_tracer.log_error(
-    #             self.connection_token,
-    #             {
-    #                 DNTag.DNMsgStage.value: DNMsgStage.CLIENT_CONNECTION.value,
-    #                 DNTag.DNMsg.value: f"Error connecting. {e}",
-    #             },
-    #         )
+        # NOW INSTALL THE IMPORTS/DEPENDENCIES
+        await self.initialize_dependencies()
 
     async def register_compute_instance(self):
         if self.connection_token is None:
@@ -859,6 +829,11 @@ def register_method(method):
         )
 
 
+def register_imports(func):
+    global registered_imports_func
+    registered_imports_func = func
+
+
 def set_author(author: str):
     _client.set_author(author)
 
@@ -987,25 +962,26 @@ def get_daw_sample_rate():
     return _client.daw_sample_rate
 
 
+def run_heartbeat():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(_client.heartbeat())
+    finally:
+        loop.close()
+
+
 async def async_main():
-    # Initialize your async tasks here
-    task1 = asyncio.create_task(_client.heartbeat())
+    thread = threading.Thread(target=run_heartbeat)
+    thread.start()
+
+    task1 = asyncio.create_task(_client.send_registered_methods_to_server())
     task2 = asyncio.create_task(_client.poll_updates())
 
-    await _client.send_registered_methods_to_server()
-    # await _client.add_connection_mapping()
-    # await _client.listen()
-
-    # If you want to run indefinitely, you can remove the 'await asyncio.gather(...)' line
-    # and just do 'await asyncio.sleep(1e9)' or something similar.
     await asyncio.gather(task1, task2)
 
 
 def connect_to_server():
-    # asyncio.run(_client.send_registered_methods_to_server())
-    # asyncio.run(_client.listen())
-
-    # Setup the asyncio event loop
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:

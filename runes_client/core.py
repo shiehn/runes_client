@@ -1,4 +1,5 @@
 import asyncio
+import importlib
 import io
 import sys
 import threading
@@ -960,6 +961,27 @@ def get_daw_bpm():
 
 def get_daw_sample_rate():
     return _client.daw_sample_rate
+
+
+def make_imports_global(modules):
+    """Import a module or list of modules and assign them globally to the caller's global context."""
+    # Ensure the input is in list form even if a single module is passed
+    if not isinstance(modules, list):
+        modules = [modules]
+
+    # Get the caller's global namespace
+    caller_globals = sys._getframe(1).f_globals
+
+    for module in modules:
+        try:
+            module_name = module.__name__
+            caller_globals[module_name] = module
+        except AttributeError as e:
+            logging.error(
+                f"The object {module} does not appear to be a module: {str(e)}"
+            )
+        except Exception as e:
+            logging.error(f"An error occurred while importing {module}: {str(e)}")
 
 
 def run_heartbeat():

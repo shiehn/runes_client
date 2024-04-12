@@ -1,5 +1,6 @@
 from .core import (
     connect_to_server,
+    make_imports_global,
     register_method,
     register_imports,
     set_token,

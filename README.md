@@ -30,7 +30,7 @@ pip uninstall runes-client -y && pip install -e . && pytest -s
 
 This is a simple example of a RUNES script created using the runes-client.  The script defines an arbitrary function that takes two arguments, an integer and a RunesFilePath.  The function is registered with the SignalsAndSorceryAPI server.  The script then connects to the SignalsAndSorceryAPI server and waits for a plugin to interact with it. 
 
-For thorough documentation and tutorials visit: [https://dawnet.tools/client/](https://dawnet.tools/client/)
+For thorough documentation and tutorials visit: [https://signalsandsorcery.com/client/](https://signalsandsorcery.com/client/)
 
 ```python
 import runes_client.core as runes 

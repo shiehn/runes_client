@@ -53,5 +53,5 @@ setup(
     description="Runes client enables remote execution of python code triggered from a Crucible Plugin on the Signals & Sorcery platform.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://dawnet.tools",
+    url="https://signalsandsorcery.app",
 )

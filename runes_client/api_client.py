@@ -84,7 +84,12 @@ class APIClient:
             # TODO: MOVE THIS TO BYOC_API.PY
 
     async def add_connection_mapping(
-        self, master_token: str, connection_token: str, name: str, description: str
+        self,
+        master_token: str,
+        connection_token: str,
+        name: str,
+        description: str,
+        connection_type: str,
     ):
         add_mapping_url = urljoin(API_BASE_URL, URL_ADD_CONNECTION_MAPPING)
 
@@ -92,6 +97,7 @@ class APIClient:
             "master_token": master_token,
             "connection_token": connection_token,
             "connection_name": name,
+            "connection_type": connection_type,
             "description": description,
         }
 

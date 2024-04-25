@@ -7,6 +7,7 @@ from .core import (
     set_author,
     set_name,
     set_description,
+    set_type,
     set_version,
     set_input_target_format,
     set_input_target_channels,

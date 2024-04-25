@@ -53,6 +53,7 @@ class WebSocketClient:
         self.method_details = {}
         self.run_status = "idle"
         self.connection_token = None
+        self.connection_type = "unknown"
         self.master_token = None
         self.message_id = None
         self.results = None
@@ -123,6 +124,7 @@ class WebSocketClient:
                 connection_token=self.connection_token,
                 name=self.name,
                 description=self.description,
+                connection_type=self.connection_type,
             )
 
         # NOW INSTALL THE IMPORTS/DEPENDENCIES
@@ -615,6 +617,9 @@ class WebSocketClient:
         self.version = version
         self.update_all_method_details()
 
+    def set_connection_type(self, connection_type):
+        self.connection_type = connection_type
+
     def update_all_method_details(self):
         for method_name, method_detail in self.method_details.items():
             # If method_detail is already a dict, no need to load it
@@ -845,6 +850,10 @@ def set_name(name: str):
 
 def set_description(description: str):
     _client.set_description(description)
+
+
+def set_type(type: str):
+    _client.set_connection_type(type)
 
 
 def set_version(version):

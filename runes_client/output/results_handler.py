@@ -115,6 +115,10 @@ class ResultsHandler:
 
         elif input_type == "midi":
             converted_file_path = file_path
+        elif input_type == "image":
+            converted_file_path = file_path
+        else:
+            converted_file_path = file_path
 
         try:
             file_url = await self.file_uploader.upload(

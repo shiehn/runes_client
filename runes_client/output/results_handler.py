@@ -2,6 +2,7 @@
 import json
 import os
 import subprocess
+from urllib.parse import urlparse, urlsplit
 
 from ..api_client import APIClient
 from ..config import API_BASE_URL
@@ -64,6 +65,48 @@ class ResultsHandler:
 
     def set_message_id(self, message_id):
         self.message_id = message_id
+
+    async def add_file_url(self, file_url: str, file_type: str):
+        # List of supported file types
+        supported_file_types = [
+            "audio",
+            "midi",
+            "text",
+            "video",
+            "image",
+        ]
+
+        # Check if the file type is supported
+        if file_type.lower() not in supported_file_types:
+            await self.add_error(f"File type {file_type} is not supported.")
+            return False
+
+        # Validate URL
+        try:
+            parsed_url = urlparse(file_url)
+            if not (parsed_url.scheme and parsed_url.netloc):
+                raise ValueError("Invalid URL")
+        except Exception as e:
+            await self.add_error(f"Invalid file URL: {e}")
+            return False
+
+        # Extract base name from URL
+        file_name = os.path.basename(parsed_url.path)
+
+        # If the extracted base name is empty or invalid, set a default name
+        if not file_name:
+            file_name = "default_filename"
+
+        # Add the file to the list
+        self.files.append(
+            {
+                "name": file_name,
+                "url": file_url,
+                "type": file_type,
+            }
+        )
+
+        return True
 
     async def add_file(self, file_path):
         classifier = FileTypeClassifier()

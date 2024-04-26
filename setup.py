@@ -30,7 +30,7 @@ if not is_ffmpeg_installed():
 
 setup(
     name="runes-client",
-    version="0.9.3",
+    version="0.9.4",
     packages=find_packages(),
     install_requires=[
         "aiohttp",
